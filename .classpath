@@ -8,11 +8,11 @@
 	<classpathentry kind="lib" path="lib/cocoon-lib/excalibur-pool-api-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon-lib/excalibur-pool-impl-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon-lib/commons-lang-2.3.jar"/>
-	<classpathentry kind="lib" path="lib/sesame-lib/sesame-repository-http-2.6.1.jar"/>
-	<classpathentry kind="lib" path="lib/sesame-lib/sesame-repository-api-2.6.1.jar"/>
-	<classpathentry kind="lib" path="lib/sesame-lib/sesame-model-2.6.1.jar"/>
-	<classpathentry kind="lib" path="lib/sesame-lib/sesame-query-2.6.1.jar"/>
-	<classpathentry kind="lib" path="lib/sesame-lib/sesame-rio-api-2.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon-lib/cocoon.jar"/>
+	<classpathentry kind="lib" path="lib/sesame-lib/sesame-model-2.6.2.jar"/>
+	<classpathentry kind="lib" path="lib/sesame-lib/sesame-query-2.6.2.jar"/>
+	<classpathentry kind="lib" path="lib/sesame-lib/sesame-repository-api-2.6.2.jar"/>
+	<classpathentry kind="lib" path="lib/sesame-lib/sesame-repository-http-2.6.2.jar"/>
+	<classpathentry kind="lib" path="lib/sesame-lib/sesame-rio-api-2.6.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
