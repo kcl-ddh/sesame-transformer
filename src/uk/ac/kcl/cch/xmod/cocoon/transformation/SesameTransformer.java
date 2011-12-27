@@ -34,12 +34,17 @@ import org.apache.cocoon.environment.SourceResolver;
 import org.apache.cocoon.transformation.AbstractDOMTransformer;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.rdfxml.RDFXMLWriter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -81,7 +86,7 @@ public class SesameTransformer extends AbstractDOMTransformer implements Configu
     /**
      * Base URI parameter name.
      */
-    public static final String BASE_URI_PARAM = "base_uri";
+    public static final String BASE_URI_PARAM = "base-uri";
     
     /**
      * Default base URI.
@@ -101,7 +106,7 @@ public class SesameTransformer extends AbstractDOMTransformer implements Configu
     /**
      * Sesame default contexts.
      */
-    public static final String SESAME_CONTEXTS_DEFAULT = "";
+    public static final String SESAME_CONTEXTS_DEFAULT = null;
     
     /**
      * Sesame contexts (space separated list).
@@ -119,7 +124,7 @@ public class SesameTransformer extends AbstractDOMTransformer implements Configu
     public static final String SESAME_ACTION_PARAM = "action";
     
     /**
-     * Sesame action. This may be one of: "add", "clear".
+     * Sesame action. This may be one of: "add", "clear", "graph-query".
      */
     private String action = null;
     
@@ -163,11 +168,10 @@ public class SesameTransformer extends AbstractDOMTransformer implements Configu
     	
         try {
             // Get the Sesame details from the parameters.
-            this.sesameURL = parameters.getParameter(SESAME_URL_PARAM, sesameURL);
+            this.sesameURL = parameters.getParameter(SESAME_URL_PARAM, this.sesameURL);
             this.repositoryID = parameters.getParameter(SESAME_REPOSITORY_ID_PARAM);
-            this.contexts = parameters.getParameter(SESAME_CONTEXTS_PARAM, contexts);
+            this.contexts = parameters.getParameter(SESAME_CONTEXTS_PARAM, this.contexts);
             this.action = parameters.getParameter(SESAME_ACTION_PARAM);
-            logger.error("Contexts: " + this.contexts);
             Repository repository = new HTTPRepository(this.sesameURL, this.repositoryID);
             repository.initialize();
             ValueFactory factory = repository.getValueFactory();
@@ -202,15 +206,21 @@ public class SesameTransformer extends AbstractDOMTransformer implements Configu
     	 *  
     	 * See http://www.openrdf.org/doc/sesame2/users/ch08.html#d0e1238  
     	 */
-        String[] arrContexts = this.contexts.split(" ");
-        Resource[] context = new Resource[arrContexts.length];
-        for (int i = 0; i < arrContexts.length; i++) {
-        	if (arrContexts[i].equals("null")) {
-        		context[i] = null;
-        	} else {
-        		context[i] = factory.createURI(arrContexts[i]);
-        	}
-        }
+    	Resource[] context;
+    	if (contexts == null) {
+    		context = null;
+    	} else {
+    		String[] arrContexts = this.contexts.split(" ");
+    		context = new Resource[arrContexts.length];
+    		for (int i = 0; i < arrContexts.length; i++) {
+    			this.logger.error("Context: '" + arrContexts[i] + "'");
+    			if (arrContexts[i].equals("null")) {
+    				context[i] = null;
+    			} else {
+    				context[i] = factory.createURI(arrContexts[i]);
+    			}
+    		}
+    	}
         return context;
 	}
 
@@ -238,28 +248,37 @@ public class SesameTransformer extends AbstractDOMTransformer implements Configu
 
 			responseDocument.appendChild(root);
 
-			if (this.action.equals("add")) {
-				responseDocument = addDocument(document, this.baseURI, context, responseDocument);
-			}
-			else if (this.action.equals("clear")) {
-				responseDocument = clearContext(context, responseDocument);
-			}
-			else {
-				this.logger.error("Invalid action parameter supplied: " + this.action);
+			try {
+				if (this.action.equals("add")) {
+					responseDocument = addDocument(document, this.baseURI, context, responseDocument);
+					Element success = responseDocument.createElement("success");
+					root.appendChild(success);
+				}
+				else if (this.action.equals("clear")) {
+					responseDocument = clearContext(context, responseDocument);
+					Element success = responseDocument.createElement("success");
+					root.appendChild(success);
+				}
+				else if (this.action.equals("graph-query")) {
+					responseDocument = performGraphQuery(document, this.baseURI);
+				}
+				else {
+					String errorMessage = "Invalid action parameter supplied: " + this.action; 
+					this.logger.error(errorMessage);
+					Element error = responseDocument.createElement("error");
+					error.setTextContent(errorMessage);
+					root.appendChild(error);
+				}
+			} catch (Exception e) {
+				String errorMessage = e.getLocalizedMessage();
+				this.logger.error(errorMessage, e);
+				Element error = responseDocument.createElement("error");
+				error.setTextContent(errorMessage);
+				root.appendChild(error);
 			}
 		} catch (ParserConfigurationException e) {
 			this.logger.error(e.getLocalizedMessage(), e);
-		} catch (RepositoryException e) {
-			this.logger.error(e.getLocalizedMessage(), e);
-		} catch (TransformerConfigurationException e) {
-			this.logger.error(e.getLocalizedMessage(), e);
-		} catch (RDFParseException e) {
-			this.logger.error(e.getLocalizedMessage(), e);
-		} catch (TransformerException e) {
-			this.logger.error(e.getLocalizedMessage(), e);
 		} catch (TransformerFactoryConfigurationError e) {
-			this.logger.error(e.getLocalizedMessage(), e);
-		} catch (IOException e) {
 			this.logger.error(e.getLocalizedMessage(), e);
 		}
 		
@@ -274,7 +293,7 @@ public class SesameTransformer extends AbstractDOMTransformer implements Configu
 	 * @param baseURI
 	 * @param context
 	 * @param responseDocument
-	 * @return
+	 * @return Document
 	 * @throws TransformerConfigurationException
 	 * @throws TransformerException
 	 * @throws TransformerFactoryConfigurationError
@@ -291,6 +310,7 @@ public class SesameTransformer extends AbstractDOMTransformer implements Configu
 		TransformerFactory.newInstance().newTransformer().transform(xmlSource, outputTarget);
 		InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
 		this.sesameConnection.add(is, baseURI, RDFFormat.RDFXML, context);
+		
 		return responseDocument;
 		
 	}
@@ -300,7 +320,7 @@ public class SesameTransformer extends AbstractDOMTransformer implements Configu
 	 * 
 	 * @param context
 	 * @param responseDocument
-	 * @return
+	 * @return Document
 	 * @throws RepositoryException 
 	 */
 	private Document clearContext(Resource[] context, Document responseDocument)
@@ -313,6 +333,33 @@ public class SesameTransformer extends AbstractDOMTransformer implements Configu
 		}
 		return responseDocument;
 	
+	}
+
+	/**
+	 * Perform a graph query taken from queryDocument, and return the RDF/XML result document.
+	 * 
+	 * @param queryDocument
+	 * @param baseURI
+	 * @return Document
+	 * @throws QueryEvaluationException
+	 * @throws RepositoryException
+	 * @throws MalformedQueryException
+	 * @throws RDFHandlerException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 */
+	private Document performGraphQuery(Document queryDocument, String baseURI)
+			throws QueryEvaluationException, RepositoryException, MalformedQueryException, RDFHandlerException, SAXException, IOException, ParserConfigurationException {
+
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		RDFXMLWriter rdfXMLWriter = new RDFXMLWriter(outputStream);
+		String query = queryDocument.getDocumentElement().getTextContent();
+		this.sesameConnection.prepareGraphQuery(QueryLanguage.SPARQL, query, baseURI).evaluate(rdfXMLWriter);
+		ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+		Document responseDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
+		return responseDocument;
+
 	}
 
 }

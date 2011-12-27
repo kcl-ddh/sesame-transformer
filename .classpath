@@ -14,5 +14,6 @@
 	<classpathentry kind="lib" path="lib/sesame-lib/sesame-repository-api-2.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/sesame-lib/sesame-repository-http-2.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/sesame-lib/sesame-rio-api-2.6.2.jar"/>
+	<classpathentry kind="lib" path="lib/sesame-lib/sesame-rio-rdfxml-2.6.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
