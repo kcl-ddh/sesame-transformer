@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/cocoon-lib/avalon-framework-api-4.3.jar"/>
-	<classpathentry kind="lib" path="lib/cocoon-lib/excalibur-xmlutil-2.1.jar"/>
-	<classpathentry kind="lib" path="lib/cocoon-lib/avalon-framework-impl-4.3.jar"/>
-	<classpathentry kind="lib" path="lib/cocoon-lib/excalibur-pool-api-2.1.jar"/>
-	<classpathentry kind="lib" path="lib/cocoon-lib/excalibur-pool-impl-2.1.jar"/>
-	<classpathentry kind="lib" path="lib/cocoon-lib/commons-lang-2.3.jar"/>
-	<classpathentry kind="lib" path="lib/cocoon-lib/cocoon.jar"/>
-	<classpathentry kind="lib" path="lib/sesame-lib/sesame-model-2.6.2.jar"/>
-	<classpathentry kind="lib" path="lib/sesame-lib/sesame-query-2.6.2.jar"/>
-	<classpathentry kind="lib" path="lib/sesame-lib/sesame-repository-api-2.6.2.jar"/>
-	<classpathentry kind="lib" path="lib/sesame-lib/sesame-repository-http-2.6.2.jar"/>
-	<classpathentry kind="lib" path="lib/sesame-lib/sesame-rio-api-2.6.2.jar"/>
-	<classpathentry kind="lib" path="lib/sesame-lib/sesame-rio-rdfxml-2.6.2.jar"/>
+	<classpathentry kind="lib" path="lib/cocoon/avalon-framework-api-4.3.jar"/>
+	<classpathentry kind="lib" path="lib/cocoon/cocoon.jar"/>
+	<classpathentry kind="lib" path="lib/rdf4j/rdf4j-client-2.3.2.jar"/>
+	<classpathentry kind="lib" path="lib/rdf4j/rdf4j-runtime-osgi-2.3.2.jar"/>
+	<classpathentry kind="lib" path="lib/cocoon/avalon-framework-impl-4.3.jar"/>
+	<classpathentry kind="lib" path="lib/cocoon/commons-lang-2.3.jar"/>
+	<classpathentry kind="lib" path="lib/cocoon/excalibur-pool-api-2.1.jar"/>
+	<classpathentry kind="lib" path="lib/cocoon/excalibur-pool-impl-2.1.jar"/>
+	<classpathentry kind="lib" path="lib/cocoon/excalibur-xmlutil-2.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

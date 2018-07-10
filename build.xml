@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<project basedir="." default="dist" name="sesame.transformer">
-  <description>Build file for the Sesame Cocoon transformer.</description>
+<project basedir="." default="dist" name="rdf.transformer">
+  <description>Build file for the RDF Cocoon transformer.</description>
 
   <!-- properties -->
   <property name="src" location="src" />
@@ -24,8 +24,8 @@
     <javac srcdir="${src}"
            destdir="${build}"
            classpathref="project.class.path"
-           source="1.5"
-           target="1.5" />
+           source="1.8"
+           target="1.8" />
   </target>
 
   <target name="dist" depends="compile" description="generate the distribution">
@@ -34,7 +34,7 @@
     <jar jarfile="${dist}/${ant.project.name}.jar" basedir="${build}" />
 
     <copy todir="${dist}">
-      <fileset dir="${lib}/sesame-lib">
+      <fileset dir="${lib}/rdf4j">
         <include name="*.jar" />
       </fileset>
     </copy>
